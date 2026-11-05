@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.database import engine, Base
 from app import models
-from app.routers import auth
+from app.routers import auth, certificates
 
 Base.metadata.create_all(bind=engine)
 
@@ -13,7 +13,11 @@ app = FastAPI(
 
 #tells the app to include every route from auth.py
 app.include_router(auth.router)
+app.include_router(certificates.router)
 
 @app.get("/health", tags=["System"])
 def health():
     return {"status": "ok"}
+
+
+
