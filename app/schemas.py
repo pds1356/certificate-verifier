@@ -26,3 +26,10 @@ class CertificateResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+class VerifyResponse(BaseModel):
+    result: str
+    message: str
+    holder_name: str | None = None
+    course_name: str | None = None
+    issue_date: date | None = None
