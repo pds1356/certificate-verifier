@@ -34,3 +34,15 @@ def issue_certificate(
     db.commit()
     db.refresh(certificate)
     return certificate
+
+@router.get("", response_model=list[CertificateResponse])
+def list_my_certificates(
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    return (
+        db.query(CertificateModel)
+        .filter(CertificateModel.issuer_id == current_user.id)
+        .order_by(CertificateModel.created_at.desc())
+        .all()
+    )
