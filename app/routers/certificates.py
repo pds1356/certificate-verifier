@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -46,3 +46,26 @@ def list_my_certificates(
         .order_by(CertificateModel.created_at.desc())
         .all()
     )
+
+# Revoke Certificate
+@router.patch("/{public_id}/revoke", response_model=CertificateResponse)
+def revoke_certificate(
+    public_id: str,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    certificate = (
+        db.query(CertificateModel)
+        .filter(
+            CertificateModel.public_id == public_id,
+            CertificateModel.issuer_id == current_user.id,
+        )
+        .first()
+    )
+    if certificate is None:
+        raise HTTPException(status_code=404, detail="Certificate not found")
+
+    certificate.status = "revoked"
+    db.commit()
+    db.refresh(certificate)
+    return certificate
