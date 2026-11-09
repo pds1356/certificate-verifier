@@ -1,3 +1,9 @@
+import io
+import os
+import qrcode
+from dotenv import load_dotenv
+from fastapi.responses import Response
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -5,6 +11,9 @@ from app.database import get_db
 from app.fingerprint import compute_fingerprint
 from app.models import CertificateModel
 from app.schemas import VerifyResponse
+
+load_dotenv()
+BASE_URL = os.getenv("BASE_URL")
 
 router = APIRouter(prefix="/verify", tags=["Verify"])
 
@@ -24,7 +33,7 @@ def verify_certificate(public_id: str, db: Session = Depends(get_db)):
     certificate.course_name,
     certificate.issue_date,
     )
-    
+
     # For tampered certificate
     if recomputed != certificate.fingerprint:
         return VerifyResponse(
@@ -50,3 +59,18 @@ def verify_certificate(public_id: str, db: Session = Depends(get_db)):
         issue_date=certificate.issue_date,
     )
 
+@router.get("/{public_id}/qr")
+def certificate_qr(public_id: str, db: Session = Depends(get_db)):
+    certificate = (
+        db.query(CertificateModel)
+        .filter(CertificateModel.public_id == public_id)
+        .first()
+    )
+    if certificate is None:
+        raise HTTPException(status_code=404, detail="Certificate not found")
+
+    link = f"{BASE_URL}/v/{certificate.public_id}"
+    image = qrcode.make(link)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    return Response(content=buffer.getvalue(), media_type="image/png")
