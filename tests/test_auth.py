@@ -41,3 +41,4 @@ def test_login_wrong_password_returns_401(client):
     )
     assert response.status_code == 401
     assert response.json()["detail"] == "Incorrect email or password"
+

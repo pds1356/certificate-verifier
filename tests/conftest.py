@@ -36,3 +36,19 @@ def client():
     yield TestClient(app)
     app.dependency_overrides.clear()
     Base.metadata.drop_all(bind=test_engine)
+
+@pytest.fixture
+def login_as(client):
+    def _login(email: str) -> dict:
+        client.post("/register", json={"email": email, "password": "secret123"})
+        response = client.post("/login", data={"username": email, "password": "secret123"})
+        token = response.json()["access_token"]
+        return {"Authorization": f"Bearer {token}"}
+
+    return _login
+
+@pytest.fixture
+def db_session(client):
+    db = TestingSessionLocal()
+    yield db
+    db.close()
