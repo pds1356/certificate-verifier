@@ -37,3 +37,44 @@ The data is written in a fixed JSON form before hashing, so two different certif
 | <img src="docs/screenshots/tampered.png" width="300"> | <img src="docs/screenshots/not_found.png" width="300"> |
 
 A tampered result deliberately shows no holder, course or date, because the edited data can't be trusted.
+
+## Tech stack
+
+| Tool | Used for |
+|---|---|
+| Python 3.12, FastAPI | The API and its automatic `/docs` page |
+| PostgreSQL 16 | Storing users and certificates |
+| SQLAlchemy | Talking to the database from Python |
+| Pydantic | Validating incoming data and shaping responses |
+| JWT (PyJWT), pwdlib (argon2) | Login tokens and password hashing |
+| hashlib (SHA-256) | Certificate fingerprints |
+| qrcode | QR code images |
+| pytest | Automated tests |
+| Docker, Docker Compose | Running the app and database together |
+| HTML, CSS, JavaScript | The public verification page |
+
+## Project structure
+
+```
+certificate-verifier/
+├── app/
+│   ├── main.py            # app setup, router registration, /health
+│   ├── database.py        # database engine and session
+│   ├── models.py          # database tables (users, certificates)
+│   ├── schemas.py         # request and response shapes
+│   ├── security.py        # password hashing and JWT creation
+│   ├── dependencies.py    # get_current_user (token check)
+│   ├── fingerprint.py     # SHA-256 fingerprint function
+│   ├── routers/
+│   │   ├── auth.py        # register and login
+│   │   ├── certificates.py  # issue, list own, revoke
+│   │   ├── verify.py      # public verification and QR code
+│   │   └── pages.py       # serves the verification page
+│   └── static/
+│       └── verify.html    # the page a QR code opens
+├── tests/                 # pytest tests
+├── docs/screenshots/      # images used in this README
+├── Dockerfile
+├── docker-compose.yml
+└── requirements.txt
+```
