@@ -76,5 +76,40 @@ certificate-verifier/
 ├── docs/screenshots/      # images used in this README
 ├── Dockerfile
 ├── docker-compose.yml
-└── requirements.txt
+├── requirements.txt
+└── .env.example
 ```
+
+## Run it with Docker
+
+You need Docker Desktop installed and running.
+
+1. Clone the repo and open the folder.
+2. Copy `.env.example` to `.env`:
+   ```
+   cp .env.example .env
+   ```
+3. In `.env`, set `POSTGRES_PASSWORD` to a simple password (letters and digits only) and `SECRET_KEY` to a long random string. You can generate one with:
+   ```
+   python -c "import secrets; print(secrets.token_hex(32))"
+   ```
+4. Start the app and the database:
+   ```
+   docker compose up --build
+   ```
+5. Open http://localhost:8000/docs to try the API.
+
+The database starts empty, so register a user first (`POST /register`), log in with the **Authorize** button, then issue a certificate. Open `http://localhost:8000/v/<public_id>` to see its verification page.
+
+## Run the tests
+
+The tests need Python 3.12 and a local PostgreSQL server with two empty databases: `certdb` and `certdb_test`. Set `DATABASE_URL` and `TEST_DATABASE_URL` in `.env` to match.
+
+```
+python -m venv venv
+source venv/Scripts/activate
+pip install -r requirements.txt
+pytest
+```
+
+The tests run only against `certdb_test`. The test setup refuses to start if the database name doesn't end in `_test`, so it can't delete real data.
