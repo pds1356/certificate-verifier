@@ -101,6 +101,8 @@ You need Docker Desktop installed and running.
 
 The database starts empty, so register a user first (`POST /register`), log in with the **Authorize** button, then issue a certificate. Open `http://localhost:8000/v/<public_id>` to see its verification page.
 
+Note: QR codes contain the address in `BASE_URL` (`http://localhost:8000` by default), so they only open on the machine running the app.
+
 ## Run the tests
 
 The tests need Python 3.12 and a local PostgreSQL server with two empty databases: `certdb` and `certdb_test`. Set `DATABASE_URL` and `TEST_DATABASE_URL` in `.env` to match.
@@ -113,3 +115,23 @@ pytest
 ```
 
 The tests run only against `certdb_test`. The test setup refuses to start if the database name doesn't end in `_test`, so it can't delete real data.
+
+## API endpoints
+
+| Method | Path | Login needed | What it does |
+|---|---|---|---|
+| POST | `/register` | No | Create an issuer account |
+| POST | `/login` | No | Log in and get a JWT token |
+| POST | `/certificates` | Yes | Issue a certificate |
+| GET | `/certificates` | Yes | List your own certificates |
+| PATCH | `/certificates/{public_id}/revoke` | Yes | Revoke one of your certificates |
+| GET | `/verify/{public_id}` | No | Verification result as JSON |
+| GET | `/verify/{public_id}/qr` | No | QR code image for a certificate |
+| GET | `/v/{public_id}` | No | Verification page opened by the QR code |
+| GET | `/health` | No | Check that the app is running |
+
+## What's next
+
+- Sign fingerprints with a private key
+- Deploy it with a public link
+- Build a simple issuer dashboard
